@@ -67,6 +67,11 @@ RGBGFXFLAGS  ?= -Weverything
 	release
 
 all: $(roms)
+	@mkdir -p build
+	@cp pokered.gbc "build/Pokemon - Pure Red Version.gb"
+	@cp pokeblue.gbc "build/Pokemon - Pure Blue Version.gb"
+	@cp pokegreen.gbc "build/Pokemon - Pure Green Version.gb"
+
 red:        pokered.gbc
 blue:       pokeblue.gbc
 green:      pokegreen.gbc
@@ -153,7 +158,7 @@ $(foreach obj, $(pokeblue_vc_obj), $(eval $(call DEP,$(obj),$(obj:_blue_vc.o=.as
 
 endif
 
-RGBLINKFLAGS += 
+RGBLINKFLAGS +=
 pokered.gbc:        RGBLINKFLAGS += -p 0x00
 pokeblue.gbc:       RGBLINKFLAGS += -p 0x00
 pokegreen.gbc:       RGBLINKFLAGS += -p 0x00
