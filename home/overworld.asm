@@ -311,7 +311,7 @@ OverworldLoopLessDelay::
 	; PureRGBnote: ADDED: Holding B makes you run at 2x walking speed
 	ldh a, [hJoyHeld]
 	and PAD_B
-	call nz, DoBikeSpeedup
+	call z, DoBikeSpeedup
 .notRunning
 	call AdvancePlayerSprite
 	ld a, [wWalkCounter]

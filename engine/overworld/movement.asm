@@ -83,7 +83,7 @@ UpdatePlayerSprite:
 	jr nz, .doneSpeed
 	ldh a, [hJoyHeld]
 	and PAD_B
-	jr z, .doneSpeed
+	jr nz, .doneSpeed
 	ld c, 2
 .doneSpeed
 	ld a, b
