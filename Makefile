@@ -68,10 +68,9 @@ RGBGFXFLAGS  ?= -Weverything
 
 all: $(roms)
 	@mkdir -p build
-	@cp pokered.gbc "build/Pokemon - Pure Red Version.gb"
-	@cp pokeblue.gbc "build/Pokemon - Pure Blue Version.gb"
-	@cp pokeblue.gbc "/Users/ryan/Library/Application Support/OpenEmu/Game Library/roms/Game Boy/Pokemon - Pure Blue Version.gb"
-	@cp pokegreen.gbc "build/Pokemon - Pure Green Version.gb"
+	@cp pokered.gbc "build/Pokemon - Pure Red Version (Fast).gb"
+	@cp pokeblue.gbc "build/Pokemon - Pure Blue Version (Fast).gb"
+	@cp pokegreen.gbc "build/Pokemon - Pure Green Version (Fast).gb"
 
 red:        pokered.gbc
 blue:       pokeblue.gbc

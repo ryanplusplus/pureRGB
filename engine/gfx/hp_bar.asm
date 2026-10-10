@@ -63,10 +63,6 @@ UpdateHPBar:
 	ld a, e
 	ld [wHPBarHPDifference+1], a
 	ld a, d
-	pop bc
-	pop de
-	call GetPredefRegisters
-	jp .drawFinalHPBar
 	ld [wHPBarHPDifference], a
 	pop bc
 	pop de
@@ -92,7 +88,20 @@ UpdateHPBar:
 	jr z, .animateHPBarDone
 	jr nc, .HPIncrease
 ; HP decrease
-	dec bc        ; subtract 1 HP
+	ld a, c
+	sub 10
+	ld c, a
+	ld a, b
+	sbc 0
+	ld b, a
+	jr c, .clampDecrease
+	call UpdateHPBar_CompareNewHPToOldHP
+	jr c, .stepWithinRange
+.clampDecrease
+	ld b, d
+	ld c, e
+	jr .stepWithinRange
+.stepWithinRange
 	ld a, c
 	ld [wHPBarNewHP], a
 	ld a, b
@@ -102,7 +111,19 @@ UpdateHPBar:
 	sub d         ; calc pixel difference
 	jr .ok
 .HPIncrease
-	inc bc        ; add 1 HP
+	ld a, c
+	add 10
+	ld c, a
+	ld a, b
+	adc 0
+	ld b, a
+	jr c, .clampIncrease
+	call UpdateHPBar_CompareNewHPToOldHP
+	jr nc, .stepWithinRangeIncrease
+.clampIncrease
+	ld b, d
+	ld c, e
+.stepWithinRangeIncrease
 	ld a, c
 	ld [wHPBarNewHP], a
 	ld a, b
@@ -155,8 +176,6 @@ UpdateHPBar_AnimateHPBar:
 	ld a, 1
 	ldh [hAutoBGTransferEnabled], a
 ;;;;;;;;;;
-	ld c, 2 ; PureRGB: TODO: decides speed of HP bar animation
-	rst DelayFrames
 	pop de
 	ld a, [wHPBarDelta] ; +1 or -1
 	add e
