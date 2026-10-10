@@ -1,4 +1,4 @@
-; PureRGBnote: ADDED: this code was modified to make it so you can speed up pokemon center dialog by holding B before talking to the nurse. 
+; PureRGBnote: ADDED: this code was modified to make it so you can speed up pokemon center dialog by holding B before talking to the nurse.
 ;                     the ability to do this is unlocked by donating to the nurse at rock tunnel pokecenter.
 
 DisplayPokemonCenterDialogue_::
@@ -56,7 +56,6 @@ DisplayPokemonCenterDialogue_::
 	ld [wSprite01StateData1ImageIndex], a ; make the nurse turn to face the machine
 	call Delay3
 	predef HealParty
-	farcall AnimateHealingMachine ; do the healing machine animation
 	SetEvent EVENT_NURSE_TEXT_LOOP_BLOCKER
 	xor a
 	ld [wAudioFadeOutControl], a

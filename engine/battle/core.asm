@@ -165,7 +165,7 @@ StartBattle:
 	ld [wPartyFoughtCurrentEnemyFlags], a
 	ld [wActionResultOrTookBattleTurn], a
 	ld [wLowHealthTonePairs], a ; shinpokerednote: FIXED: low health alarm sanity: clear low health tone tracker
-	inc a
+	ld a, 2
 	ld [wFirstMonsNotOutYet], a
 	ld hl, wEnemyMon1HP
 	ld bc, PARTYMON_STRUCT_LENGTH - 1
@@ -470,7 +470,7 @@ MainInBattleLoop:
 	call CheckNumAttacksLeft
 	jp MainInBattleLoop
 ;;;;;;;;;; shinpokerednote: FIXED: reorganizing this so enemy AI item use and switching has priority over player moves
-.playerMovesFirst 
+.playerMovesFirst
 ;#1 - handle enemy switching or using an item
 	ld a, 1
 	ldh [hWhoseTurn], a
@@ -1164,7 +1164,7 @@ RemoveFaintedPlayerMon:
 .skipWaitForSound
 ; a is 0, so this zeroes the enemy's accumulated damage.
 ;;;;;;;;;; PureRGBnote: CHANGED: bide effect removed from game because the effect was changed
-	;ld hl, wEnemyBideAccumulatedDamage 
+	;ld hl, wEnemyBideAccumulatedDamage
 	;ld [hli], a
 	;ld [hl], a
 ;;;;;;;;;;
@@ -1252,7 +1252,7 @@ ChooseNextMon:
 .monChosen
 	call HasMonFainted
 	jr z, .goBackToPartyMenu ; if mon fainted, you have to choose another
-;;;;;;;;; PureRGBnote: ADDED: Code for TELEPORT - prevents selecting the pokemon that's currently out 
+;;;;;;;;; PureRGBnote: ADDED: Code for TELEPORT - prevents selecting the pokemon that's currently out
 ;;;;;;;;; (will not matter in other scenarios since the current pokemon will be fainted and that will be caught by the previous check)
 	ld hl, wPlayerMonNumber
 	ld a, [wWhichPokemon]
@@ -1657,7 +1657,7 @@ HasMonFainted:
 	ld a, [wFirstMonsNotOutYet]
 	and a
 	jr nz, .done
-	callfar EmptyPartyMenuRedraw ; PureRGBnote: FIXED: minor graphical glitch when selecting a fainted pokemon 
+	callfar EmptyPartyMenuRedraw ; PureRGBnote: FIXED: minor graphical glitch when selecting a fainted pokemon
 	ld hl, NoWillText
 	rst _PrintText
 .done
@@ -1911,9 +1911,11 @@ LoadEnemyMonFromParty:
 	ld [wEnemyMonPartyPos], a
 	ld de, wEnemyMonType
 	jpfar TryRemapTyping
-	
+
 SendOutMon:
-	callfar PrintSendOutMonMessage
+	ld a, [wFirstMonsNotOutYet]
+	cp 2
+	call z, PrintSendOutMonMessage
 	ld hl, wEnemyMonHP
 	ld a, [hli]
 	or [hl] ; is enemy mon HP zero?
@@ -1949,14 +1951,11 @@ SendOutMon:
 	ResetEvent FLAG_SKIP_DELAY_IN_GBC_PALETTE_FUNC
 	ld a, $1
 	ldh [hWhoseTurn], a
-	ld a, SEND_OUT_MON_BALL_POOF_ANIM
-	ld [wAnimationID], a
-	call PlayMoveAnimationNoDelay
 	ldh a, [hGBC]
 	and a
 	call z, .palette
 	hlcoord 4, 11
-	call AnimateSendingOutMon
+	call ShowPlayerMonImmediately
 	ld a, [wCurPartySpecies]
 	call PlayCry
 	call PrintEmptyString
@@ -1965,6 +1964,17 @@ SendOutMon:
 .palette
 	ld d, SET_PAL_BATTLE
 	jp RunPaletteCommand
+
+ShowPlayerMonImmediately:
+	ldh a, [hStartTileID]
+	ldh [hBaseTileID], a
+	ld bc, -(SCREEN_WIDTH * 2 + 1)
+	add hl, bc
+	add hl, bc
+	add hl, bc
+	ldh a, [hBaseTileID]
+	add $31
+	jp CopyUncompressedPicToHL
 
 ; show 2 stages of the player mon getting smaller before disappearing
 AnimateRetreatingPlayerMon:
@@ -2038,7 +2048,7 @@ DrawPlayerHUDAndHPBar::
 	ld a, [wOptions3]
 	bit BIT_EXP_BAR, a
 	jr z, .noExpBar
-	farcall PrintEXPBar	
+	farcall PrintEXPBar
 .noExpBar
 ;;;;;;;;;;
 	ld hl, wBattleMonSpecies
@@ -2613,12 +2623,12 @@ PartyMenuOrRockOrRun:
 .notAlreadyOut
 	call HasMonFainted
 	jp z, .partyMonDeselected ; can't switch to fainted mon
-	;;;;;;;;; PureRGBnote: ADDED: set previous type and status indicators so the AI doesn't use super effective moves or status moves cheaply 
+	;;;;;;;;; PureRGBnote: ADDED: set previous type and status indicators so the AI doesn't use super effective moves or status moves cheaply
 	;;;;;;;;;           against the pokemon we just sent out when we switch using a turn up
 	ld a, [wBattleMonType1]
-	ld [wAITargetMonType1], a 
+	ld [wAITargetMonType1], a
 	ld a, [wBattleMonType2]
-	ld [wAITargetMonType2], a 
+	ld [wAITargetMonType2], a
 	ld a, [wBattleMonStatus]
 	ld [wAITargetMonStatus], a
 	;;;;;;;;;
@@ -2627,7 +2637,7 @@ PartyMenuOrRockOrRun:
 	;;;;;;;;; PureRGBnote: ADDED: helps avoid ai spamming as if they predict you switching pokemon perfectly
 	;;;;;;;;; it was added here vs lower in SwitchPlayerMon because SwitchPlayerMon is also used in the case of in Shift game mode switching
 	inc a ; 2 = player switched pokemon this turn
-	ld [wAIMoveSpamAvoider], a 
+	ld [wAIMoveSpamAvoider], a
 	;;;;;;;;;
 	call GBPalWhiteOut
 	call ClearSprites
@@ -2880,7 +2890,7 @@ SelectMenuItem:
 	cp c
 	jr z, .disabled
 	;ld a, [wPlayerBattleStatus3]
-	;bit TRANSFORMED, a 
+	;bit TRANSFORMED, a
 	;jr nz, .transformedMoveSelected
 ;.transformedMoveSelected ; pointless
 	; Allow moves copied by Transform to be used.
@@ -3813,7 +3823,7 @@ PrintMonWokeUp::
 	ld hl, WokeUpText
 	rst _PrintText
 	ret
-	
+
 WokeUpText:
 	text_far_end _WokeUpText
 
@@ -4541,7 +4551,7 @@ GetEnemyMonStat:
 	ld [wCurSpecies], a
 	call GetMonHeader
 	;ld hl, wEnemyMonDVs	;shinpokerednote: CHANGED: why load this into speedexp? I don't even know like seriously WTF
-	;ld de, wLoadedMonSpeedExp		
+	;ld de, wLoadedMonSpeedExp
 	;ld a, [hli]
 	;ld [de], a
 	;inc de
@@ -4559,7 +4569,7 @@ GetEnemyMonStat:
 
 	;point hl to the saved position for HPStatExp - 1
 	hl_deref_reverse wEnemyStatEXPStore
-	
+
 	ld b, 1	;take stat exp into account
 .nottrainer
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -4738,7 +4748,7 @@ JumpToOHKOMoveEffect:
 	dec a
 	ret
 
-INCLUDE "data/battle/priority_moves.asm" 
+INCLUDE "data/battle/priority_moves.asm"
 
 ; determines if attack is a critical hit
 ; Azure Heights claims "the fastest pokémon (who are, not coincidentally,
@@ -4774,8 +4784,8 @@ CriticalHitTest:
 	bit GETTING_PUMPED, a        ; test for focus energy
 	jr z, .noFocusEnergyUsed     ; bug: using focus energy causes a shift to the right instead of left,
 	                             ; resulting in 1/4 the usual crit chance
-;;;;;;;;;; PureRGBnote: FIXED: fix focus energy 
-	sla b                        
+;;;;;;;;;; PureRGBnote: FIXED: fix focus energy
+	sla b
 	jr c, .capCritical
 	sla b 						 ; normal attacks have 4x crit rate under focus energy
 	jr c, .capCritical
@@ -5093,7 +5103,7 @@ MirrorMoveCopyMove:
 ; which are mainly used to print the "[Pokemon] used [Move]" text.
 ; PureRGBnote: CHANGED: now it uses wEnemyLastSelectedMove and wPlayerLastSelectedMove
 ; which persist between switches and turns where the opponent can't move.
-; basically means mirror move will always use the previously used opponent move, 
+; basically means mirror move will always use the previously used opponent move,
 ; no matter if the pokemon that used the move fainted, switched, etc.
 
 	ldh a, [hWhoseTurn]
@@ -5288,7 +5298,7 @@ AdjustDamageForMoveType:
 	ld a, [hl] ; a = damage multiplier
 	call RemapTypeMatchupBasedOnOptions ; PureRGBnote: ADDED: remap type chart based on game options settings
 	ldh [hMultiplier], a
-;;;; shinpokerednote: FIXED: fixing the wrong effectiveness message 
+;;;; shinpokerednote: FIXED: fixing the wrong effectiveness message
 	and a
 	jr z, .endmulti	;skip to end if the multiplier is zero
 	cp NOT_VERY_EFFECTIVE	;multiplier is still in a, so see if it's half damage
@@ -5358,7 +5368,7 @@ CheckIfDefenseCurlModifier:
 
 ForceTypeImmunity:
 	xor a
-	ldh [hMultiplier], a 
+	ldh [hMultiplier], a
 ApplyDamageMultiplier:
 	ld [wDamageMultipliers], a
 ApplyDamageMultiplier2:
@@ -5385,7 +5395,7 @@ ApplyDamageMultiplier2:
 ; if damage is 0, make the move miss
 ; this only occurs if a move that would do 2 or 3 damage is 0.25x effective against the target
 	inc a
-	ld [wMoveMissed], a 
+	ld [wMoveMissed], a
 	ret
 
 ; PureRGBnote: ADDED: type matchups can be switched to match how they behave in later generations if so desired
@@ -6190,7 +6200,7 @@ CheckEnemyStatusConditions:
 .monHurtItselfOrFullyParalysed
 	ld hl, wEnemyBattleStatus1
 	ld a, [hl]
-	; clear thrashing about, charging up, and multi-turn moves such as wrap 
+	; clear thrashing about, charging up, and multi-turn moves such as wrap
 	; PureRGBnote: CHANGED: bide effect changed so don't need that code
 	; PureRGBnote: CHANGED: invulnerability flag cleared so opponents don't get stuck in invulnerable state
 	and ~((1 << THRASHING_ABOUT) | (1 << CHARGING_UP) | (1 << USING_TRAPPING_MOVE) | (1 << INVULNERABLE))
@@ -6322,13 +6332,13 @@ LoadEnemyMonData:
 	ld hl, wEnemyMonHP
 	push hl
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;shinpokerednote: ADDED: assign calculated stat exp to all stats if this is a trainer ai battle 
+;shinpokerednote: ADDED: assign calculated stat exp to all stats if this is a trainer ai battle
 
 ;is this a trainer battle? Wild pkmn do not have statexp
 	ld a, [wIsInBattle]
 	cp $2 ; is it a trainer battle?
 	jr nz, .nottrainer	;not a trainer battle, so hl will continue to point to wEnemyMonHP and b=0 for CalcStats
-	
+
 ;this is a trainer battle, so point hl to the HP statExp address of the correct mon in the enemy party data
 	ld hl, wEnemyMon1HPExp	;make hl point to HP statExp of the first enemy party mon
 	ld a, [wWhichPokemon]	;get the party position
@@ -6344,11 +6354,11 @@ LoadEnemyMonData:
 	;has this pkmn been sent out before? If so, then it already has statExp values
 	call CheckAISentOut
 	jr nz, .noloops
-	
+
 ;the pkmn is out for the first time, so give it some statExp
 	push de	;preserve de
 	push hl
-	farcall CalcEnemyStatEXP	;based on the enemy pkmn level, get a stat exp amount into de 
+	farcall CalcEnemyStatEXP	;based on the enemy pkmn level, get a stat exp amount into de
 	pop hl
 	push hl	;save position for party data wEnemyMon<x>HPExp - 1
 	inc hl ; move hl forward one position to MSB of first stat exp
@@ -6360,7 +6370,7 @@ LoadEnemyMonData:
 	ld [hli], a		;load LSB and point hl to MSB of next statexp location
 	dec b
 	jr nz, .writeStatExp_loop
-	
+
 	pop hl	;point hl back to the saved position for party data wEnemyMon<x>HPExp - 1
 	pop de	;restore the prior de
 .noloops
@@ -6401,11 +6411,11 @@ LoadEnemyMonData:
 	ld a, [wIsInBattle]
 	cp $2 ; is it a trainer battle?
 	jr nz, .nottrainer2
-	
+
 	;has pkmn already been sent out?
 	call CheckAISentOut
 	jr nz, .nottrainer2
-	
+
 ;set hp equal to max hp
 	ld a, [wEnemyMonMaxHP]
 	ld [wEnemyMonHP], a
@@ -7341,7 +7351,7 @@ do999StatCap:
 	;Note that if a < $E7 then the carry bit 'c' in the flag register gets set due to overflowing with a negative result.
 	ld a, b ;now let's work on the high byte
 	sbc MAX_STAT_VALUE / $100 ;a = a - ($03E7 / $100 + c_flag). Gives a = a - ($03 + c_flag). A byte / $100 always gives the greater nibble.
-	;Note again that if a < $03 then the carry bit remains set. 
+	;Note again that if a < $03 then the carry bit remains set.
 	;If the bit is already set from the lesser nibble, then its addition here can still make it remain set if a is low enough.
 	ret c ;jump to next marker if the c_flag is set. This only remains set if BC <  the cap of $03E7.
 	;else let's continue and set the 999 cap
@@ -7355,7 +7365,7 @@ CheckandResetEnemyActedBit:
 	bit ALREADY_ACTED, a	;check a for already-acted bit (sets or clears zero flag)
 	res ALREADY_ACTED, a ; resets the already-acted bit (does not affect flags)
 	ld [wEnemyBattleStatus3], a
-	ret 
+	ret
 
 ;shinpokerednote: ADDED: function for setting the AI's already-acted bit
 SetEnemyActedBit:
@@ -7370,7 +7380,7 @@ SetEnemyActedBit:
 CheckAISentOut:
 	ld a, FLAG_TEST
 	jr AISentOutFlagAction
-	
+
 SetAISentOut:
 	ld a, FLAG_SET
 	; fall through

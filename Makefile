@@ -70,6 +70,7 @@ all: $(roms)
 	@mkdir -p build
 	@cp pokered.gbc "build/Pokemon - Pure Red Version.gb"
 	@cp pokeblue.gbc "build/Pokemon - Pure Blue Version.gb"
+	@cp pokeblue.gbc "/Users/ryan/Library/Application Support/OpenEmu/Game Library/roms/Game Boy/Pokemon - Pure Blue Version.gb"
 	@cp pokegreen.gbc "build/Pokemon - Pure Green Version.gb"
 
 red:        pokered.gbc

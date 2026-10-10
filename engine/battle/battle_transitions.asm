@@ -594,11 +594,10 @@ BattleTransition_HorizontalStripes_:
 ; makes one full circle around the screen
 ; by animating each half circle one at a time
 BattleTransition_Circle:
-	call BattleTransition_FlashScreen
-	lb bc, 0, SCREEN_WIDTH / 2
+	lb bc, 0, SCREEN_WIDTH / 4
 	ld hl, BattleTransition_HalfCircle1
 	call BattleTransition_Circle_Sub1
-	lb bc, 1, SCREEN_WIDTH / 2 
+	lb bc, 1, SCREEN_WIDTH / 4
 	ld hl, BattleTransition_HalfCircle2
 	call BattleTransition_Circle_Sub1
 	jp BattleTransition_BlackScreen
@@ -636,8 +635,7 @@ BattleTransition_TransferDelay3:
 ; makes two half circles around the screen
 ; by animating both half circles at the same time
 BattleTransition_DoubleCircle:
-	call BattleTransition_FlashScreen
-	ld c, SCREEN_WIDTH / 2
+	ld c, SCREEN_WIDTH / 4
 	ld hl, BattleTransition_HalfCircle1
 	ld de, BattleTransition_HalfCircle2
 .loop

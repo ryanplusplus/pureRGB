@@ -63,6 +63,10 @@ UpdateHPBar:
 	ld a, e
 	ld [wHPBarHPDifference+1], a
 	ld a, d
+	pop bc
+	pop de
+	call GetPredefRegisters
+	jp .drawFinalHPBar
 	ld [wHPBarHPDifference], a
 	pop bc
 	pop de
@@ -119,6 +123,7 @@ UpdateHPBar:
 	jr .animateHPBarLoop
 .animateHPBarDone
 	pop de
+.drawFinalHPBar
 	ld a, e
 	ld [wHPBarOldHP], a
 	ld a, d
@@ -131,7 +136,7 @@ UpdateHPBar:
 	call UpdateHPBar_PrintHPNumber
 	ld a, $1
 	call UpdateHPBar_AnimateHPBar
-	jp Delay3
+	ret
 
 ; animates the HP bar going up or down for (a) ticks (two waiting frames each)
 ; stops prematurely if bar is filled up

@@ -481,13 +481,13 @@ MoveAnimationContent:
 	jr .next
 .animationsDisabled
 	ld c, 10 ; PureRGBnote: CHANGED: less delay when animations are turned off to speed up gameplay.
-	rst DelayFrames 
+	rst DelayFrames
 .next
 	vc_hook_red Stop_reducing_move_anim_flashing
 	vc_hook_blue Stop_reducing_move_anim_flashing_Rock_Slide_Dream_Eater
 	call PlayApplyingAttackAnimation ; shake the screen or flash the pic in and out (to show damage)
 .animationFinished
-	pop af ; a = whether the animation should wait for the sound to finish 
+	pop af ; a = whether the animation should wait for the sound to finish
 	and a
 	call z, WaitForSoundToFinish
 .noWaiting
@@ -531,6 +531,7 @@ ShareMoveAnimations:
 PlayApplyingAttackAnimation:
 ; Generic animation that shows after the move's individual animation
 ; Different animation depending on whether the move has an additional effect and on whose turn it is
+	ret
 	ld a, [wAnimationType]
 	and a
 	ret z
@@ -1313,7 +1314,7 @@ AnimationFlashScreenCommon:
 AnimationFlashScreenCommonLessDarkFlashing:
 	ldh a, [rBGP]
 	cp %11100100 ; default palettes
-	call z, AnimationDarkenMonPalette ; play a less intense sprite flicker instead of full screen flash if in default palettes 
+	call z, AnimationDarkenMonPalette ; play a less intense sprite flicker instead of full screen flash if in default palettes
 	; otherwise it will not flash
 	ld c, 4
 	rst DelayFrames
@@ -1384,7 +1385,7 @@ AnimationShakeScreen:
 AnimationShakeScreenHorizontallyFast:
 	jpfar PredefShakeScreenHorizontally
 
-;AnimationPoisonEverywhere: 
+;AnimationPoisonEverywhere:
 ;	ld a, 1
 ;	ld d, 32
 ;	ld e, $76
@@ -1405,12 +1406,12 @@ AnimationWaterDropletsEverywhereFast:
 	ld e, $71
 	jr AnimationTileEverywhereFastInit
 
-AnimationSmokeEverywhere: 
+AnimationSmokeEverywhere:
 	xor a
 	ld e, $7A
 	jr AnimationTileEverywhereFastInit
 
-AnimationSnowflakesEverywhere: 
+AnimationSnowflakesEverywhere:
 	xor a
 	ld e, $4D
 	jr AnimationTileEverywhereFastInit
@@ -1457,7 +1458,7 @@ _AnimationWaterDroplets:
 ;;;;;;;;;; shinpokerednote: gbcnote: oam updates from pokemon yellow
 	ld a, $1
 	ld [wdef5], a
-;;;;;;;;;; 
+;;;;;;;;;;
 	ld a, [wBaseCoordY]
 	ld [hli], a ; Y
 ;;;;;;;;;; shinpokerednote: gbcnote: oam updates from pokemon yellow
@@ -1904,7 +1905,7 @@ AnimationSpiralFireInwardFast::
 	ld [wUnusedC000], a
 	ret
 
-	
+
 AnimationSpiralBallsInwardFast:
 	ld d, $50 ; tile number
 AnimationSpiralBallsInwardFastDefault:
@@ -2178,7 +2179,7 @@ _AnimationShootBallsUpward:
 	jr nz, .loop
 	ret
 
-;;;;;;;;;;;;;;;;;;;;;; 
+;;;;;;;;;;;;;;;;;;;;;;
 ; PureRGBnote: ADDED: Shoot many balls upward has been slightly modified to look nicer, and is used in-game now instead of being unused.
 AnimationShootManyBallsUpward:
 ; Shoots several pillars of "energy" balls upward.
@@ -2346,7 +2347,7 @@ _AnimationSlideMonOff:
 	add 7
 ; This is a bug. The lower right corner tile of the mon back pic is blanked
 ; while the mon is sliding off the screen. It should compare with the max tile
-; plus one instead. 
+; plus one instead.
 	cp $62 ; PureRGBnote: CHANGED: now it's plus one as the above comment indicates
 	ret c
 	ld a, ' '
