@@ -8,7 +8,6 @@ INCLUDE "data/battle/special_effects.asm"
 
 SlidePlayerAndEnemySilhouettesOnScreen:
 	; TODO: optional trainer colors
-	callfar LoadPlayerBackPic
 	ld a, MESSAGE_BOX ; the usual text box at the bottom of the screen
 	ld [wTextBoxID], a
 	call DisplayTextBoxID
@@ -97,7 +96,6 @@ SlidePlayerAndEnemySilhouettesOnScreen:
 	pop af
 ;;;;;;;;;;
 
-	call SlidePlayerHeadLeft
 	ld a, c
 	ldh [hSCX], a
 	dec c
@@ -107,8 +105,6 @@ SlidePlayerAndEnemySilhouettesOnScreen:
 	ldh [hAutoBGTransferEnabled], a
 	ld a, $31
 	ldh [hStartTileID], a
-	hlcoord 1, 5
-	call CopyUncompressedPicToTilemap
 
 	xor a
 	ldh [hWY], a
