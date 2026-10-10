@@ -394,13 +394,13 @@ BattleTransition_Shrink:
 	call BattleTransition_CopyTiles2
 	ld a, $1
 	ldh [hAutoBGTransferEnabled], a
-	ld c, 6
+	ld c, 1
 	rst DelayFrames
 	pop bc
 	dec c
 	jr nz, .loop
 	call BattleTransition_BlackScreen
-	ld c, 10
+	ld c, 1
 	jp DelayFrames
 
 ; used for high level trainer dungeon battles
@@ -427,12 +427,11 @@ BattleTransition_Split:
 	ld bc, 2
 	call BattleTransition_CopyTiles2
 	call BattleTransition_TransferDelay3
-	call Delay3
 	pop bc
 	dec c
 	jr nz, .loop
 	call BattleTransition_BlackScreen
-	ld c, 10
+	ld c, 1
 	jp DelayFrames
 
 BattleTransition_CopyTiles1:
@@ -626,7 +625,11 @@ BattleTransition_Circle_Sub1:
 BattleTransition_TransferDelay3:
 	ld a, 1
 	ldh [hAutoBGTransferEnabled], a
+	ld a, [wCurOpponent]
+	cp OPP_ID_OFFSET
+	jr nc, .done
 	call Delay3
+.done
 	xor a
 	ldh [hAutoBGTransferEnabled], a
 	ret

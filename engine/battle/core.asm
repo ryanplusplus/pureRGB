@@ -78,6 +78,9 @@ SlidePlayerAndEnemySilhouettesOnScreen:
 	call UpdateGBCPal_OBP0
 	call UpdateGBCPal_OBP1
 ;;;;;;;;;;
+	ld a, [wIsInBattle]
+	dec a
+	jr z, .skipSilhouetteSlide
 	call EnableLCD ; shinpokerednote: FIXED: move enableLCD down here to avoid a 1 frame white flash on starting battle on DMG/GBC modes
 .slideSilhouettesLoop ; slide silhouettes of the player's pic and the enemy's pic onto the screen
 	ld h, b
@@ -101,6 +104,11 @@ SlidePlayerAndEnemySilhouettesOnScreen:
 	dec c
 	dec c
 	jr nz, .slideSilhouettesLoop
+.skipSilhouetteSlide
+	xor a
+	ldh [hSCX], a
+	ldh [rSCX], a
+	call EnableLCD ; shinpokerednote: FIXED: move enableLCD down here to avoid a 1 frame white flash on starting battle on DMG/GBC modes
 	ld a, $1
 	ldh [hAutoBGTransferEnabled], a
 	ld a, $31
